@@ -1,0 +1,111 @@
+# 🎉 BUILDCERT AUTOMATION - START HERE!
+
+You have everything you need to deploy your automation system!
+
+## 📁 What You Have
+
+This folder contains:
+- ✅ Complete API server (Node.js/Express)
+- ✅ 128 pricing rules from your Excel file
+- ✅ Pipedrive Custom Panel (React app)
+- ✅ Front Sidebar Plugin (React app)
+- ✅ NSW Planning Portal integration
+- ✅ All routes and utilities
+- ✅ Tests
+- ✅ Documentation
+
+## 🚀 Next Steps (Choose One)
+
+### For Non-Technical Users:
+👉 **Read: `DEPLOYMENT.md`**
+   Step-by-step guide with screenshots
+   Takes 15-20 minutes
+   Zero coding required
+
+### For Technical Users:
+👉 **Read: `README.md`**
+   Technical documentation
+   API endpoints
+   Development guide
+
+## ⚡ Super Quick Start
+
+1. **Upload to GitHub** (entire folder as-is)
+2. **Deploy to Render** (follow DEPLOYMENT.md)
+3. **Copy environment variables** from RENDER_ENV.txt to Render
+4. **Test!**
+
+## 📦 Files Explained
+
+- `server.js` - Main API server
+- `routes/` - API endpoints (quotes, planning, front, pipedrive)
+- `utils/` - Pricing calculation engine
+- `public/` - Frontend plugins (Pipedrive panel, Front sidebar)
+- `pricing-config.json` - Your 128 pricing rules
+- `package.json` - Dependencies
+- `.env` - Environment variables (for local testing only - DO NOT commit to GitHub!)
+- `RENDER_ENV.txt` - Environment variables for Render (copy/paste these)
+
+## 🔑 Required Environment Variables
+
+Create a `.env` file with:
+```
+PIPEDRIVE_API_TOKEN=your_token_here
+PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
+FRONT_API_TOKEN=your_token_here
+PORT=3000
+NODE_ENV=production
+```
+
+## 🎯 What This Does
+
+### Quote Automation:
+- Calculate quotes in 2 minutes (instead of 20)
+- Automatically add products to Pipedrive
+- Update deal values
+- 128 pricing rules from your Excel
+
+### Planning Portal:
+- Check zoning, bushfire, heritage
+- Geocode addresses automatically
+- Return Lot/DP info
+
+### Front Integration:
+- Extract client info from emails
+- Create Pipedrive leads automatically
+- Parse addresses, project types
+
+### Pipedrive Panel:
+- Embedded in every deal
+- Calculate button
+- Planning check button
+- View quote line items
+- PandaDoc integration
+
+## 💰 Cost
+
+- Render Free Tier: $0/month
+- GitHub: Free
+- **Total: $0 to start!**
+
+## ⏱️ Time to Deploy
+
+- Upload to GitHub: 5 minutes
+- Deploy to Render: 5 minutes
+- Install plugins: 5 minutes
+- **Total: 15 minutes**
+
+## 🆘 Need Help?
+
+1. Check `DEPLOYMENT.md` for step-by-step guide
+2. Check `README.md` for technical details
+3. Check Render logs if something fails
+
+## 🎊 Ready?
+
+Open `DEPLOYMENT.md` and let's get started!
+
+---
+
+Built with ❤️ for Buildcert
+Version 1.0.0 | January 2026

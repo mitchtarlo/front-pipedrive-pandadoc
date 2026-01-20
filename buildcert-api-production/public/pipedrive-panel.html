@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buildcert Project Panel</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: #4169E1;
+            color: white;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .panel-body {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+        
+        .btn:hover {
+            background: #2548B8;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #4169E1;
+            border: 2px solid #4169E1;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f7ff;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e8f0fe;
+            color: #4169E1;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .status-badge.success {
+            background: #e6f4ea;
+            color: #1e8e3e;
+        }
+        
+        .products-table {
+            width: 100%;
+            margin-top: 12px;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .products-table th {
+            background: #f5f5f5;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .products-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .products-table .qty {
+            text-align: center;
+        }
+        
+        .products-table .price {
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .products-total {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid #4169E1;
+        }
+        
+        .products-total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+        
+        .products-total-row.total {
+            font-weight: 700;
+            font-size: 16px;
+            color: #4169E1;
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .planning-data {
+            background: #f0f7ff;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+        
+        .planning-data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        
+        .planning-data-row strong {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        function PipedrivePanel() {
+            const [dealId, setDealId] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [quote, setQuote] = useState(null);
+            const [planningData, setPlanningData] = useState(null);
+            
+            // Form state
+            const [clientCategory, setClientCategory] = useState('');
+            const [developmentType, setDevelopmentType] = useState('');
+            const [approvalType, setApprovalType] = useState('CDC');
+            const [costOfWorks, setCostOfWorks] = useState('');
+            const [address, setAddress] = useState('');
+            
+            useEffect(() => {
+                // Get deal ID from URL or Pipedrive SDK
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('dealId') || urlParams.get('id');
+                
+                if (id) {
+                    setDealId(id);
+                    loadDealData(id);
+                }
+                
+                setLoading(false);
+            }, []);
+            
+            async function loadDealData(id) {
+                try {
+                    const response = await fetch(`/api/pipedrive/deal/${id}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.deal) {
+                        // Pre-fill form if data exists
+                        // You can map custom fields here
+                    }
+                    
+                    // Check if products already exist
+                    const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products`);
+                    const productsData = await productsResponse.json();
+                    
+                    if (productsData.success && productsData.products.length > 0) {
+                        // Quote already calculated - show summary
+                        setQuote({ line_items: productsData.products });
+                    }
+                } catch (err) {
+                    console.error('Error loading deal:', err);
+                }
+            }
+            
+            async function calculateQuote() {
+                if (!clientCategory || !developmentType || !costOfWorks) {
+                    setError('Please fill in all required fields');
+                    return;
+                }
+                
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    const response = await fetch('/api/quotes/calculate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            client_category: clientCategory,
+                            development_type: developmentType,
+                            approval_type: approvalType,
+                            cost_of_works: parseFloat(costOfWorks),
+                            deal_id: dealId
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setQuote(data.quote);
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError('Failed to calculate quote: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            
+            async function runPlanningCheck() {
+                if (!address) {
+                    setError('Please enter a property address');
+                    return;
+                }
+                
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    const response = await fetch('/api/planning-portal/check', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ address })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setPlanningData(data.data);
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError('Failed to check planning portal: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            
+            return (
+                <div className="panel">
+                    <div className="panel-header">
+                        BUILDCERT PROJECT PANEL
+                    </div>
+                    
+                    <div className="panel-body">
+                        {error && <div className="error">{error}</div>}
+                        
+                        {/* Planning Portal Check */}
+                        <div className="section">
+                            <div className="section-title">🔍 NSW PLANNING PORTAL CHECK</div>
+                            
+                            <div className="input-group">
+                                <label>Property Address</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g., 46 Diana Street, Wallsend NSW 2287"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                />
+                            </div>
+                            
+                            <button 
+                                className="btn btn-secondary" 
+                                onClick={runPlanningCheck}
+                                disabled={loading || !address}
+                            >
+                                {loading ? 'Checking...' : 'Run CDC Red Flag Check'}
+                            </button>
+                            
+                            {planningData && (
+                                <div className="planning-data">
+                                    <div className="planning-data-row">
+                                        <span><strong>Zone:</strong></span>
+                                        <span>{planningData.zone} - {planningData.zone_description}</span>
+                                    </div>
+                                    <div className="planning-data-row">
+                                        <span><strong>LGA:</strong></span>
+                                        <span>{planningData.lga}</span>
+                                    </div>
+                                    <div className="planning-data-row">
+                                        <span><strong>Bushfire:</strong></span>
+                                        <span>{planningData.bushfire}</span>
+                                    </div>
+                                    <div className="planning-data-row">
+                                        <span><strong>Heritage:</strong></span>
+                                        <span>{planningData.heritage}</span>
+                                    </div>
+                                    <div className="planning-data-row">
+                                        <span><strong>Lot:</strong></span>
+                                        <span>{planningData.lot}</span>
+                                    </div>
+                                    <div className="planning-data-row">
+                                        <span><strong>DP:</strong></span>
+                                        <span>{planningData.dp}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Quote Generation */}
+                        <div className="section">
+                            <div className="section-title">💰 QUOTE GENERATION</div>
+                            
+                            {!quote ? (
+                                <>
+                                    <div className="status-badge">Not Generated</div>
+                                    
+                                    <div className="input-group">
+                                        <label>Client Category *</label>
+                                        <select value={clientCategory} onChange={(e) => setClientCategory(e.target.value)}>
+                                            <option value="">Select...</option>
+                                            <option value="Platinum">Platinum</option>
+                                            <option value="Gold">Gold</option>
+                                            <option value="Silver">Silver</option>
+                                            <option value="Bronze">Bronze</option>
+                                            <option value="Ruby">Ruby</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Development Type *</label>
+                                        <select value={developmentType} onChange={(e) => setDevelopmentType(e.target.value)}>
+                                            <option value="">Select...</option>
+                                            <option value="Single Dwelling">Single Dwelling</option>
+                                            <option value="Alterations & Additions">Alterations & Additions</option>
+                                            <option value="Swimming Pool">Swimming Pool</option>
+                                            <option value="Shed">Shed</option>
+                                            <option value="Secondary Dwelling">Secondary Dwelling</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Approval Type *</label>
+                                        <select value={approvalType} onChange={(e) => setApprovalType(e.target.value)}>
+                                            <option value="CDC">CDC</option>
+                                            <option value="CC">CC</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Value of Works *</label>
+                                        <input 
+                                            type="number" 
+                                            placeholder="250000"
+                                            value={costOfWorks}
+                                            onChange={(e) => setCostOfWorks(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <button 
+                                        className="btn" 
+                                        onClick={calculateQuote}
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Calculating...' : 'Calculate Quote'}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="status-badge success">✓ Products Added to Deal</div>
+                                    
+                                    <table className="products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th className="qty">Qty</th>
+                                                <th className="price">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {quote.line_items.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{item.name}</td>
+                                                    <td className="qty">{item.quantity}</td>
+                                                    <td className="price">${item.subtotal.toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    
+                                    <div className="products-total">
+                                        <div className="products-total-row">
+                                            <span>Subtotal:</span>
+                                            <span>${quote.subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="products-total-row">
+                                            <span>GST (10%):</span>
+                                            <span>${quote.gst.toFixed(2)}</span>
+                                        </div>
+                                        <div className="products-total-row total">
+                                            <span>Total:</span>
+                                            <span>${quote.total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <button 
+                                        className="btn" 
+                                        style={{marginTop: '16px'}}
+                                        onClick={() => setQuote(null)}
+                                    >
+                                        Recalculate Quote
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                        
+                        {/* Documents */}
+                        <div className="section">
+                            <div className="section-title">📄 DOCUMENTS</div>
+                            <button className="btn" disabled={!quote}>
+                                Create PandaDoc Quote
+                            </button>
+                            <p style={{fontSize: '11px', color: '#666', marginTop: '8px', textAlign: 'center'}}>
+                                {!quote ? 'Calculate quote first' : 'Opens PandaDoc with products from deal'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<PipedrivePanel />, document.getElementById('root'));
+    </script>
+</body>
+</html>

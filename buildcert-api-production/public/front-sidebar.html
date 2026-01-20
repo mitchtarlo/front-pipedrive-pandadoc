@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buildcert Email Extractor</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: white;
+            padding: 16px;
+        }
+        
+        .header {
+            background: #4169E1;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-field {
+            background: #f5f5f5;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .data-field label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .data-field .value {
+            color: #333;
+        }
+        
+        .data-field .empty {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+        
+        .btn:hover {
+            background: #2548B8;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #4169E1;
+            border: 2px solid #4169E1;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f7ff;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .success {
+            background: #e6f4ea;
+            color: #1e8e3e;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        function FrontSidebar() {
+            const [conversationId, setConversationId] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [success, setSuccess] = useState(null);
+            const [extractedData, setExtractedData] = useState(null);
+            const [editMode, setEditMode] = useState(false);
+            
+            // Editable fields
+            const [name, setName] = useState('');
+            const [email, setEmail] = useState('');
+            const [phone, setPhone] = useState('');
+            const [address, setAddress] = useState('');
+            const [projectType, setProjectType] = useState('');
+            const [lot, setLot] = useState('');
+            const [dp, setDp] = useState('');
+            
+            useEffect(() => {
+                // Get conversation ID from Front context
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('conversation_id') || urlParams.get('id');
+                
+                if (id) {
+                    setConversationId(id);
+                    extractEmail(id);
+                }
+            }, []);
+            
+            async function extractEmail(id) {
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    const response = await fetch('/api/front/extract-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ conversation_id: id })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setExtractedData(data.data);
+                        
+                        // Pre-fill editable fields
+                        setName(data.data.name || '');
+                        setEmail(data.data.email || '');
+                        setPhone(data.data.phone || '');
+                        setAddress(data.data.address || '');
+                        setProjectType(data.data.project_type || '');
+                        setLot(data.data.lot || '');
+                        setDp(data.data.dp || '');
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError('Failed to extract email data: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            
+            async function createLead() {
+                setLoading(true);
+                setError(null);
+                setSuccess(null);
+                
+                try {
+                    const response = await fetch('/api/front/create-lead', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name,
+                            email,
+                            phone,
+                            address,
+                            project_type: projectType
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setSuccess(`Lead created successfully! Lead ID: ${data.lead_id}`);
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError('Failed to create lead: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            
+            if (loading && !extractedData) {
+                return <div className="loading">Extracting email data...</div>;
+            }
+            
+            return (
+                <>
+                    <div className="header">
+                        <h2>📧 Buildcert Email Extractor</h2>
+                    </div>
+                    
+                    {error && <div className="error">{error}</div>}
+                    {success && <div className="success">{success}</div>}
+                    
+                    {extractedData && (
+                        <>
+                            {/* Extracted Data (Read-Only View) */}
+                            {!editMode && (
+                                <div className="section">
+                                    <div className="section-title">✓ EXTRACTED DATA</div>
+                                    
+                                    <div className="data-field">
+                                        <label>Name</label>
+                                        <div className={name ? 'value' : 'empty'}>
+                                            {name || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>Email</label>
+                                        <div className={email ? 'value' : 'empty'}>
+                                            {email || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>Phone</label>
+                                        <div className={phone ? 'value' : 'empty'}>
+                                            {phone || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>Property Address</label>
+                                        <div className={address ? 'value' : 'empty'}>
+                                            {address || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>Project Type</label>
+                                        <div className={projectType ? 'value' : 'empty'}>
+                                            {projectType || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>Lot</label>
+                                        <div className={lot ? 'value' : 'empty'}>
+                                            {lot || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="data-field">
+                                        <label>DP</label>
+                                        <div className={dp ? 'value' : 'empty'}>
+                                            {dp || 'Not found'}
+                                        </div>
+                                    </div>
+                                    
+                                    <button 
+                                        className="btn btn-secondary" 
+                                        onClick={() => setEditMode(true)}
+                                    >
+                                        ✏️ Edit Information
+                                    </button>
+                                    
+                                    <button 
+                                        className="btn" 
+                                        onClick={createLead}
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Creating...' : 'Create Lead in Pipedrive'}
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {/* Edit Mode */}
+                            {editMode && (
+                                <div className="section">
+                                    <div className="section-title">✏️ EDIT INFORMATION</div>
+                                    
+                                    <div className="input-group">
+                                        <label>Name</label>
+                                        <input 
+                                            type="text" 
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Email</label>
+                                        <input 
+                                            type="email" 
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Phone</label>
+                                        <input 
+                                            type="tel" 
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Property Address</label>
+                                        <input 
+                                            type="text" 
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Project Type</label>
+                                        <select 
+                                            value={projectType}
+                                            onChange={(e) => setProjectType(e.target.value)}
+                                        >
+                                            <option value="">Select...</option>
+                                            <option value="Single Dwelling">Single Dwelling</option>
+                                            <option value="Alterations & Additions">Alterations & Additions</option>
+                                            <option value="Swimming Pool">Swimming Pool</option>
+                                            <option value="Shed">Shed</option>
+                                            <option value="Secondary Dwelling">Secondary Dwelling</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>Lot</label>
+                                        <input 
+                                            type="text" 
+                                            value={lot}
+                                            onChange={(e) => setLot(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className="input-group">
+                                        <label>DP</label>
+                                        <input 
+                                            type="text" 
+                                            value={dp}
+                                            onChange={(e) => setDp(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <button 
+                                        className="btn btn-secondary" 
+                                        onClick={() => setEditMode(false)}
+                                    >
+                                        ← Back to View
+                                    </button>
+                                    
+                                    <button 
+                                        className="btn" 
+                                        onClick={createLead}
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Creating...' : 'Create Lead in Pipedrive'}
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
+            );
+        }
+        
+        ReactDOM.render(<FrontSidebar />, document.getElementById('root'));
+    </script>
+</body>
+</html>

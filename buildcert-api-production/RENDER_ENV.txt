@@ -1,0 +1,46 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RENDER ENVIRONMENT VARIABLES - COPY/PASTE THESE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When deploying to Render, add these environment variables:
+
+Go to: Dashboard → Your Service → Environment → Add Environment Variable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: PIPEDRIVE_API_TOKEN
+Value: ee459a4555d43128aecbbcb2f92283799f7dda20
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: PIPEDRIVE_DOMAIN
+Value: buildcert2.pipedrive.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: FRONT_API_TOKEN
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlsiYXBwX3RyaWdnZXIiLCJrYiIsInNoYXJlZDoqIiwicHJpdmF0ZToqIiwicHJvdmlzaW9uaW5nIiwic2NpbSIsInRpbToxMTIzNTQ4NCIsInRpbToxMDM3NTgzNiIsInRpbToxMTIzNTQyMCIsInRpbToxMTIzNTU0OCIsInRpbToxMTIzNTI5MiIsInRpbToxMTIzNTM1NiJdLCJpYXQiOjE3Njg1Mzk1ODEsImlzcyI6ImZyb250Iiwic3ViIjoiOTlhMjEwMzJjZDRiZDBjYjQ5YTUiLCJqdGkiOiIxNmM2ZjY0Zjk3NTY5N2VmIn0.wen9LcVu3xtEumlnrygpgZXo7UT0jqrao_4Xs-zYGn4
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: NODE_ENV
+Value: production
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  IMPORTANT NOTES:
+
+1. DO NOT commit .env file to GitHub (it's in .gitignore)
+2. Copy these values into Render's environment variables section
+3. Do NOT include quotes or backticks when pasting
+4. Each variable should be added separately in Render
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SECURITY:
+- .env file is excluded from GitHub (.gitignore)
+- API keys only stored in Render's encrypted environment
+- This file (RENDER_ENV.txt) is just for your reference
+- You can delete RENDER_ENV.txt after deployment if you want
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

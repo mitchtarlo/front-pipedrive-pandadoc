@@ -1,0 +1,240 @@
+📦 BUILDCERT API - COMPLETE PACKAGE CONTENTS
+═══════════════════════════════════════════════
+
+This package contains everything you need to deploy your automation system!
+
+📁 FOLDER STRUCTURE:
+────────────────────
+
+buildcert-api-production/
+│
+├── 📄 START_HERE.txt              ← READ THIS FIRST!
+├── 📄 DEPLOYMENT.md               ← Step-by-step deployment guide
+├── 📄 README.md                   ← Technical documentation
+│
+├── 🔧 Configuration Files:
+│   ├── package.json               ← Dependencies
+│   ├── .env.example               ← Environment variables template
+│   ├── .gitignore                 ← Git ignore rules
+│   └── pricing-config.json        ← 128 pricing rules from Excel
+│
+├── 🖥️ Server Files:
+│   ├── server.js                  ← Main API server
+│   └── test-pricing.js            ← Test suite
+│
+├── 📂 routes/                     ← API Endpoints:
+│   ├── quotes.js                  ← Quote calculation & Pipedrive integration
+│   ├── planning-portal.js         ← NSW Planning Portal checks
+│   ├── front.js                   ← Front email extraction
+│   └── pipedrive.js               ← Pipedrive data fetching
+│
+├── 📂 utils/                      ← Business Logic:
+│   └── pricing-calculator.js     ← Core pricing engine
+│
+└── 📂 public/                     ← Frontend Plugins:
+    ├── pipedrive-panel.html       ← Custom Pipedrive panel (React)
+    └── front-sidebar.html         ← Front sidebar plugin (React)
+
+
+🎯 WHAT EACH FILE DOES:
+────────────────────────
+
+📄 START_HERE.txt
+   Your first stop! Quick overview and next steps.
+
+📄 DEPLOYMENT.md
+   Complete step-by-step guide to deploy to Render.
+   Includes screenshots, troubleshooting, and testing.
+
+📄 README.md
+   Technical documentation for developers.
+   API endpoints, configuration, development guide.
+
+🔧 package.json
+   Lists all Node.js dependencies.
+   Defines npm scripts: start, dev, test.
+
+🔧 .env.example
+   Template for environment variables.
+   Copy to .env and fill in your API tokens.
+
+🔧 pricing-config.json
+   Contains all 128 pricing rules extracted from your Excel file.
+   Includes: client categories, development types, value ranges, fees.
+
+🖥️ server.js
+   Main Express server that runs everything.
+   Serves API endpoints and frontend plugins.
+
+🖥️ test-pricing.js
+   Test suite for pricing calculations.
+   Run with: npm test
+
+📂 routes/quotes.js
+   API endpoint: /api/quotes/calculate
+   - Calculates quotes using pricing engine
+   - Adds products to Pipedrive deals
+   - Updates deal values
+
+📂 routes/planning-portal.js
+   API endpoint: /api/planning-portal/check
+   - Geocodes addresses
+   - Queries NSW Planning Portal
+   - Returns: Zone, Bushfire, Heritage, LGA
+
+📂 routes/front.js
+   API endpoints:
+   - /api/front/extract-email - Extract data from emails
+   - /api/front/create-lead - Create Pipedrive leads
+
+📂 routes/pipedrive.js
+   API endpoints:
+   - /api/pipedrive/deal/:id - Get deal details
+   - /api/pipedrive/deal/:id/products - Get deal products
+
+📂 utils/pricing-calculator.js
+   Core business logic for quote calculations.
+   Reads pricing-config.json and applies rules.
+
+📂 public/pipedrive-panel.html
+   React app that displays inside Pipedrive deals.
+   Features:
+   - Calculate quotes with dropdowns
+   - Run Planning Portal checks
+   - View quote line items
+   - Link to PandaDoc
+
+📂 public/front-sidebar.html
+   React app that displays in Front sidebar.
+   Features:
+   - Auto-extract email data
+   - Edit extracted fields
+   - Create Pipedrive leads
+
+
+📊 PRICING RULES:
+─────────────────
+
+✅ 128 rules extracted from New_fee_template_14_04.xlsm
+
+Categories Covered:
+• Client Categories: Platinum, Gold, Silver, Bronze, Ruby
+• Development Types: Single Dwelling, Alterations & Additions, 
+  Swimming Pool, Shed, Secondary Dwelling
+• Approval Types: CDC, CC
+• Value Ranges: Multiple brackets per type
+• Regions: All NSW regions (if applicable)
+
+Fixed NSW Fees:
+• Application Fee: $46.00 (GST-free)
+• Archival Fee: $47.00 x 2 = $94.00 (GST-free)
+• GST Rate: 10% on applicable items
+
+
+🔌 API ENDPOINTS:
+─────────────────
+
+Once deployed, your API will have these endpoints:
+
+POST /api/quotes/calculate
+   Calculate a quote and add to Pipedrive deal
+   
+POST /api/planning-portal/check
+   Check NSW Planning Portal for property data
+   
+POST /api/front/extract-email
+   Extract data from Front email conversation
+   
+POST /api/front/create-lead
+   Create Pipedrive lead from extracted data
+   
+GET /api/pipedrive/deal/:id
+   Get Pipedrive deal details
+   
+GET /api/pipedrive/deal/:id/products
+   Get products attached to deal
+   
+GET /health
+   API health check
+   
+GET /
+   API info and endpoints list
+
+
+🎨 FRONTEND PLUGINS:
+────────────────────
+
+Pipedrive Panel:
+   URL: https://your-api.onrender.com/pipedrive-panel?dealId={dealId}
+   Shows in: Deal detail view
+   Features:
+   - Quote calculator
+   - Planning Portal check
+   - Product summary
+   - PandaDoc link
+
+Front Sidebar:
+   URL: https://your-api.onrender.com/front-sidebar?conversation_id={conversationId}
+   Shows in: Conversation sidebar
+   Features:
+   - Auto email extraction
+   - Edit fields
+   - Create lead button
+
+
+📦 DEPENDENCIES:
+────────────────
+
+Production:
+• express - Web server framework
+• cors - Cross-origin resource sharing
+• axios - HTTP client for API calls
+• dotenv - Environment variable management
+
+Development:
+• nodemon - Auto-restart during development
+
+
+🚀 DEPLOYMENT CHECKLIST:
+────────────────────────
+
+□ Read START_HERE.txt
+□ Create GitHub repository
+□ Upload this folder to GitHub
+□ Create Render account (free)
+□ Connect GitHub to Render
+□ Deploy web service
+□ Add environment variables
+□ Test API endpoints
+□ Install Pipedrive panel
+□ Install Front sidebar
+□ Test complete workflow
+
+
+💡 QUICK TIPS:
+──────────────
+
+• Start with FREE tier on Render (no credit card required)
+• All API keys go in environment variables (never in code)
+• Test locally first: npm install && npm test && npm start
+• Check Render logs if deployment fails
+• Pipedrive panel appears in ALL deals automatically
+• Front sidebar appears in ALL email conversations
+
+
+📞 SUPPORT:
+───────────
+
+Deployment Issues:
+→ Check DEPLOYMENT.md troubleshooting section
+
+Technical Questions:
+→ Check README.md
+
+API Errors:
+→ Check Render logs in dashboard
+
+
+═══════════════════════════════════════════════
+READY TO DEPLOY? Open DEPLOYMENT.md!
+═══════════════════════════════════════════════
