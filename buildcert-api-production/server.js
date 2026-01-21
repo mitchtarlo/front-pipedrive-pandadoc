@@ -12,12 +12,14 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Import routes
+const oauthRoutes = require('./routes/oauth');
 const quoteRoutes = require('./routes/quotes');
 const planningPortalRoutes = require('./routes/planning-portal');
 const frontRoutes = require('./routes/front');
 const pipedriveRoutes = require('./routes/pipedrive');
 
 // API Routes
+app.use('/oauth', oauthRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/planning-portal', planningPortalRoutes);
 app.use('/api/front', frontRoutes);
