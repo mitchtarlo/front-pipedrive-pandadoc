@@ -9,7 +9,7 @@ Go to: Dashboard → Your Service → Environment → Add Environment Variable
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Key: PIPEDRIVE_API_TOKEN
-Value: ee459a4555d43128aecbbcb2f92283799f7dda20
+Value: your_pipedrive_api_token_here
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -19,7 +19,7 @@ Value: buildcert2.pipedrive.com
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Key: FRONT_API_TOKEN
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlsiYXBwX3RyaWdnZXIiLCJrYiIsInNoYXJlZDoqIiwicHJpdmF0ZToqIiwicHJvdmlzaW9uaW5nIiwic2NpbSIsInRpbToxMTIzNTQ4NCIsInRpbToxMDM3NTgzNiIsInRpbToxMTIzNTQyMCIsInRpbToxMTIzNTU0OCIsInRpbToxMTIzNTI5MiIsInRpbToxMTIzNTM1NiJdLCJpYXQiOjE3Njg1Mzk1ODEsImlzcyI6ImZyb250Iiwic3ViIjoiOTlhMjEwMzJjZDRiZDBjYjQ5YTUiLCJqdGkiOiIxNmM2ZjY0Zjk3NTY5N2VmIn0.wen9LcVu3xtEumlnrygpgZXo7UT0jqrao_4Xs-zYGn4
+Value: your_front_api_token_here
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
