@@ -61,9 +61,9 @@ Click "Add Environment Variable" for each one:
 
 | Key | Value |
 |-----|-------|
-| `PIPEDRIVE_API_TOKEN` | `ee459a4555d43128aecbbcb2f92283799f7dda20` |
+| `PIPEDRIVE_API_TOKEN` | `your_pipedrive_api_token_here` |
 | `PIPEDRIVE_DOMAIN` | `buildcert2.pipedrive.com` |
-| `FRONT_API_TOKEN` | `eyJhbGci...` (see RENDER_ENV.txt for full token) |
+| `FRONT_API_TOKEN` | `your_front_api_token_here` |
 | `NODE_ENV` | `production` |
 
 **Important:** 

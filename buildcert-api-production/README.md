@@ -23,9 +23,9 @@ Complete automation system for quote generation, Pipedrive integration, Front em
 Go to your service → Environment → Add environment variables:
 
 ```
-PIPEDRIVE_API_TOKEN=ee459a45... (your token)
+PIPEDRIVE_API_TOKEN=your_pipedrive_api_token_here
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
-FRONT_API_TOKEN=eyJhbGci... (your token)
+FRONT_API_TOKEN=your_front_api_token_here
 PORT=3000
 NODE_ENV=production
 ```
@@ -111,6 +111,9 @@ To install in Pipedrive:
 1. Go to Settings → Apps & Integrations → Custom Apps
 2. Create new app
 3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel?dealId={dealId}`
+   - If the form rejects `{dealId}`, use one of these validator-friendly options instead:
+     - `https://buildcert-api.onrender.com/pipedrive-panel?dealId=%7BdealId%7D`
+     - `https://buildcert-api.onrender.com/pipedrive-panel?id=%7Bid%7D`
 
 ### Front Sidebar
 Access at: `https://buildcert-api.onrender.com/front-sidebar?conversation_id=cnv_123`

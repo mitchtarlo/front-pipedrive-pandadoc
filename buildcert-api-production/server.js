@@ -20,6 +20,7 @@ const pipedriveRoutes = require('./routes/pipedrive');
 
 // API Routes
 app.use('/oauth', oauthRoutes);
+app.use('/api/pipedrive/oauth', oauthRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/planning-portal', planningPortalRoutes);
 app.use('/api/front', frontRoutes);
