@@ -51,6 +51,7 @@ This folder contains:
 Create a `.env` file with:
 ```
 PIPEDRIVE_API_TOKEN=your_token_here
+PIPEDRIVE_CLIENT_SECRET=your_client_secret_here
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
 FRONT_API_TOKEN=your_token_here
 PORT=3000

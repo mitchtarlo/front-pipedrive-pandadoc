@@ -13,6 +13,11 @@ Value: your_pipedrive_api_token_here
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+Key: PIPEDRIVE_CLIENT_SECRET
+Value: your_pipedrive_client_secret_here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Key: PIPEDRIVE_DOMAIN
 Value: buildcert2.pipedrive.com
 
@@ -34,6 +39,7 @@ Value: production
 2. Copy these values into Render's environment variables section
 3. Do NOT include quotes or backticks when pasting
 4. Each variable should be added separately in Render
+5. Optional: Set PIPEDRIVE_JWT_SECRET if you want a separate JWT secret (defaults to client secret)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
