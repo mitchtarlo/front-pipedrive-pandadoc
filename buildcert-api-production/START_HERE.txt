@@ -51,10 +51,15 @@ This folder contains:
 Create a `.env` file with:
 ```
 PIPEDRIVE_API_TOKEN=your_token_here
+PIPEDRIVE_CLIENT_ID=your_client_id_here
+PIPEDRIVE_CLIENT_SECRET=your_client_secret_here
+PIPEDRIVE_REDIRECT_URI=https://your-service.onrender.com/api/pipedrive/oauth/callback
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
 FRONT_API_TOKEN=your_token_here
 PORT=3000
 NODE_ENV=production
+PIPEDRIVE_JWT_ENFORCE=true
+PIPEDRIVE_PANEL_DEBUG=false
 ```
 
 ## 🎯 What This Does

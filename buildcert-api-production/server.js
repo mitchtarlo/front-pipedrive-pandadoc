@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,8 +27,66 @@ app.use('/api/planning-portal', planningPortalRoutes);
 app.use('/api/front', frontRoutes);
 app.use('/api/pipedrive', pipedriveRoutes);
 
+const pipedriveJwtSecret =
+  process.env.PIPEDRIVE_JWT_SECRET || process.env.PIPEDRIVE_CLIENT_SECRET;
+const enforcePipedriveJwt = process.env.PIPEDRIVE_JWT_ENFORCE !== 'false';
+const logPipedrivePanelRequests = process.env.PIPEDRIVE_PANEL_DEBUG === 'true';
+
+function logPipedrivePanelRequest(req) {
+  if (!logPipedrivePanelRequests) {
+    return;
+  }
+
+  const { token, id, selectedIds, resource, view } = req.query;
+  const tokenHint = token ? `${token.slice(0, 8)}…` : 'missing';
+  console.log('Pipedrive panel request', {
+    token: tokenHint,
+    id,
+    selectedIds,
+    resource,
+    view
+  });
+}
+
+function validatePipedriveJwt(req, res, next) {
+  const { token } = req.query;
+
+  if (!token) {
+    if (!enforcePipedriveJwt || process.env.NODE_ENV !== 'production') {
+      console.warn('⚠️ Missing Pipedrive JWT token; allowing in non-production.');
+      return next();
+    }
+    return res.status(401).send('Missing Pipedrive JWT token.');
+  }
+
+  if (!pipedriveJwtSecret) {
+    if (!enforcePipedriveJwt) {
+      console.warn('⚠️ Missing Pipedrive JWT secret; allowing because enforcement is off.');
+      return next();
+    }
+    return res
+      .status(500)
+      .send('Missing PIPEDRIVE_CLIENT_SECRET or PIPEDRIVE_JWT_SECRET.');
+  }
+
+  try {
+    req.pipedriveJwt = jwt.verify(token, pipedriveJwtSecret);
+    return next();
+  } catch (error) {
+    console.error('Invalid Pipedrive JWT token:', error);
+    if (!enforcePipedriveJwt) {
+      console.warn('⚠️ Invalid Pipedrive JWT token; allowing because enforcement is off.');
+      return next();
+    }
+    return res.status(401).send('Invalid Pipedrive JWT token.');
+  }
+}
+
 // Serve Pipedrive Custom Panel
-app.get('/pipedrive-panel', (req, res) => {
+app.get('/pipedrive-panel', (req, res, next) => {
+  logPipedrivePanelRequest(req);
+  next();
+}, validatePipedriveJwt, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'pipedrive-panel.html'));
 });
 

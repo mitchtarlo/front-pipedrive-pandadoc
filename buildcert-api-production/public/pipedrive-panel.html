@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pipedrive/app-extensions-sdk@latest/dist/index.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -231,6 +232,7 @@
             const [error, setError] = useState(null);
             const [quote, setQuote] = useState(null);
             const [planningData, setPlanningData] = useState(null);
+            const [sdkReady, setSdkReady] = useState(false);
             
             // Form state
             const [clientCategory, setClientCategory] = useState('');
@@ -240,17 +242,51 @@
             const [address, setAddress] = useState('');
             
             useEffect(() => {
-                // Get deal ID from URL or Pipedrive SDK
                 const urlParams = new URLSearchParams(window.location.search);
-                const id = urlParams.get('dealId') || urlParams.get('id');
-                
+                const sdkId = urlParams.get('id');
+                const selectedIds = urlParams.get('selectedIds');
+                const selectedDealId = selectedIds ? selectedIds.split(',')[0] : null;
+                const id = urlParams.get('dealId') || urlParams.get('id') || selectedDealId;
+
                 if (id) {
                     setDealId(id);
-                    loadDealData(id);
                 }
-                
-                setLoading(false);
+
+                const sdkConstructor =
+                    (window.Pipedrive && window.Pipedrive.AppExtensionsSdk) ||
+                    window.AppExtensionsSdk ||
+                    window.AppExtensionsSDK;
+
+                if (!sdkConstructor) {
+                    setError('Pipedrive SDK not available. Please check the SDK script URL.');
+                    setLoading(false);
+                    return;
+                }
+
+                if (!sdkId) {
+                    setError('Missing Pipedrive SDK id in the iframe URL.');
+                    setLoading(false);
+                    return;
+                }
+
+                const sdk = new sdkConstructor();
+                sdk.initialize({ id: sdkId })
+                    .then(() => {
+                        setSdkReady(true);
+                        setLoading(false);
+                    })
+                    .catch((initError) => {
+                        console.error('SDK initialization failed:', initError);
+                        setError('Failed to initialize Pipedrive SDK.');
+                        setLoading(false);
+                    });
             }, []);
+
+            useEffect(() => {
+                if (sdkReady && dealId) {
+                    loadDealData(dealId);
+                }
+            }, [sdkReady, dealId]);
             
             async function loadDealData(id) {
                 try {
@@ -349,176 +385,184 @@
                     
                     <div className="panel-body">
                         {error && <div className="error">{error}</div>}
+                        {loading && <div className="loading">Loading panel...</div>}
+                        {!loading && !error && !dealId && (
+                            <div className="error">Missing deal ID from Pipedrive context.</div>
+                        )}
                         
-                        {/* Planning Portal Check */}
-                        <div className="section">
-                            <div className="section-title">🔍 NSW PLANNING PORTAL CHECK</div>
-                            
-                            <div className="input-group">
-                                <label>Property Address</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g., 46 Diana Street, Wallsend NSW 2287"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                />
-                            </div>
-                            
-                            <button 
-                                className="btn btn-secondary" 
-                                onClick={runPlanningCheck}
-                                disabled={loading || !address}
-                            >
-                                {loading ? 'Checking...' : 'Run CDC Red Flag Check'}
-                            </button>
-                            
-                            {planningData && (
-                                <div className="planning-data">
-                                    <div className="planning-data-row">
-                                        <span><strong>Zone:</strong></span>
-                                        <span>{planningData.zone} - {planningData.zone_description}</span>
-                                    </div>
-                                    <div className="planning-data-row">
-                                        <span><strong>LGA:</strong></span>
-                                        <span>{planningData.lga}</span>
-                                    </div>
-                                    <div className="planning-data-row">
-                                        <span><strong>Bushfire:</strong></span>
-                                        <span>{planningData.bushfire}</span>
-                                    </div>
-                                    <div className="planning-data-row">
-                                        <span><strong>Heritage:</strong></span>
-                                        <span>{planningData.heritage}</span>
-                                    </div>
-                                    <div className="planning-data-row">
-                                        <span><strong>Lot:</strong></span>
-                                        <span>{planningData.lot}</span>
-                                    </div>
-                                    <div className="planning-data-row">
-                                        <span><strong>DP:</strong></span>
-                                        <span>{planningData.dp}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        
-                        {/* Quote Generation */}
-                        <div className="section">
-                            <div className="section-title">💰 QUOTE GENERATION</div>
-                            
-                            {!quote ? (
-                                <>
-                                    <div className="status-badge">Not Generated</div>
+                        {!loading && !error && (
+                            <>
+                                {/* Planning Portal Check */}
+                                <div className="section">
+                                    <div className="section-title">🔍 NSW PLANNING PORTAL CHECK</div>
                                     
                                     <div className="input-group">
-                                        <label>Client Category *</label>
-                                        <select value={clientCategory} onChange={(e) => setClientCategory(e.target.value)}>
-                                            <option value="">Select...</option>
-                                            <option value="Platinum">Platinum</option>
-                                            <option value="Gold">Gold</option>
-                                            <option value="Silver">Silver</option>
-                                            <option value="Bronze">Bronze</option>
-                                            <option value="Ruby">Ruby</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="input-group">
-                                        <label>Development Type *</label>
-                                        <select value={developmentType} onChange={(e) => setDevelopmentType(e.target.value)}>
-                                            <option value="">Select...</option>
-                                            <option value="Single Dwelling">Single Dwelling</option>
-                                            <option value="Alterations & Additions">Alterations & Additions</option>
-                                            <option value="Swimming Pool">Swimming Pool</option>
-                                            <option value="Shed">Shed</option>
-                                            <option value="Secondary Dwelling">Secondary Dwelling</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="input-group">
-                                        <label>Approval Type *</label>
-                                        <select value={approvalType} onChange={(e) => setApprovalType(e.target.value)}>
-                                            <option value="CDC">CDC</option>
-                                            <option value="CC">CC</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div className="input-group">
-                                        <label>Value of Works *</label>
+                                        <label>Property Address</label>
                                         <input 
-                                            type="number" 
-                                            placeholder="250000"
-                                            value={costOfWorks}
-                                            onChange={(e) => setCostOfWorks(e.target.value)}
+                                            type="text" 
+                                            placeholder="e.g., 46 Diana Street, Wallsend NSW 2287"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
                                         />
                                     </div>
                                     
                                     <button 
-                                        className="btn" 
-                                        onClick={calculateQuote}
-                                        disabled={loading}
+                                        className="btn btn-secondary" 
+                                        onClick={runPlanningCheck}
+                                        disabled={loading || !address}
                                     >
-                                        {loading ? 'Calculating...' : 'Calculate Quote'}
+                                        {loading ? 'Checking...' : 'Run CDC Red Flag Check'}
                                     </button>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="status-badge success">✓ Products Added to Deal</div>
                                     
-                                    <table className="products-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Item</th>
-                                                <th className="qty">Qty</th>
-                                                <th className="price">Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {quote.line_items.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td>{item.name}</td>
-                                                    <td className="qty">{item.quantity}</td>
-                                                    <td className="price">${item.subtotal.toFixed(2)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    {planningData && (
+                                        <div className="planning-data">
+                                            <div className="planning-data-row">
+                                                <span><strong>Zone:</strong></span>
+                                                <span>{planningData.zone} - {planningData.zone_description}</span>
+                                            </div>
+                                            <div className="planning-data-row">
+                                                <span><strong>LGA:</strong></span>
+                                                <span>{planningData.lga}</span>
+                                            </div>
+                                            <div className="planning-data-row">
+                                                <span><strong>Bushfire:</strong></span>
+                                                <span>{planningData.bushfire}</span>
+                                            </div>
+                                            <div className="planning-data-row">
+                                                <span><strong>Heritage:</strong></span>
+                                                <span>{planningData.heritage}</span>
+                                            </div>
+                                            <div className="planning-data-row">
+                                                <span><strong>Lot:</strong></span>
+                                                <span>{planningData.lot}</span>
+                                            </div>
+                                            <div className="planning-data-row">
+                                                <span><strong>DP:</strong></span>
+                                                <span>{planningData.dp}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Quote Generation */}
+                                <div className="section">
+                                    <div className="section-title">💰 QUOTE GENERATION</div>
                                     
-                                    <div className="products-total">
-                                        <div className="products-total-row">
-                                            <span>Subtotal:</span>
-                                            <span>${quote.subtotal.toFixed(2)}</span>
-                                        </div>
-                                        <div className="products-total-row">
-                                            <span>GST (10%):</span>
-                                            <span>${quote.gst.toFixed(2)}</span>
-                                        </div>
-                                        <div className="products-total-row total">
-                                            <span>Total:</span>
-                                            <span>${quote.total.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <button 
-                                        className="btn" 
-                                        style={{marginTop: '16px'}}
-                                        onClick={() => setQuote(null)}
-                                    >
-                                        Recalculate Quote
+                                    {!quote ? (
+                                        <>
+                                            <div className="status-badge">Not Generated</div>
+                                            
+                                            <div className="input-group">
+                                                <label>Client Category *</label>
+                                                <select value={clientCategory} onChange={(e) => setClientCategory(e.target.value)}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Platinum">Platinum</option>
+                                                    <option value="Gold">Gold</option>
+                                                    <option value="Silver">Silver</option>
+                                                    <option value="Bronze">Bronze</option>
+                                                    <option value="Ruby">Ruby</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div className="input-group">
+                                                <label>Development Type *</label>
+                                                <select value={developmentType} onChange={(e) => setDevelopmentType(e.target.value)}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Single Dwelling">Single Dwelling</option>
+                                                    <option value="Alterations & Additions">Alterations & Additions</option>
+                                                    <option value="Swimming Pool">Swimming Pool</option>
+                                                    <option value="Shed">Shed</option>
+                                                    <option value="Secondary Dwelling">Secondary Dwelling</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div className="input-group">
+                                                <label>Approval Type *</label>
+                                                <select value={approvalType} onChange={(e) => setApprovalType(e.target.value)}>
+                                                    <option value="CDC">CDC</option>
+                                                    <option value="CC">CC</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div className="input-group">
+                                                <label>Value of Works *</label>
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="250000"
+                                                    value={costOfWorks}
+                                                    onChange={(e) => setCostOfWorks(e.target.value)}
+                                                />
+                                            </div>
+                                            
+                                            <button 
+                                                className="btn" 
+                                                onClick={calculateQuote}
+                                                disabled={loading}
+                                            >
+                                                {loading ? 'Calculating...' : 'Calculate Quote'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="status-badge success">✓ Products Added to Deal</div>
+                                            
+                                            <table className="products-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Item</th>
+                                                        <th className="qty">Qty</th>
+                                                        <th className="price">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {quote.line_items.map((item, index) => (
+                                                        <tr key={index}>
+                                                            <td>{item.name}</td>
+                                                            <td className="qty">{item.quantity}</td>
+                                                            <td className="price">${item.subtotal.toFixed(2)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            
+                                            <div className="products-total">
+                                                <div className="products-total-row">
+                                                    <span>Subtotal:</span>
+                                                    <span>${quote.subtotal.toFixed(2)}</span>
+                                                </div>
+                                                <div className="products-total-row">
+                                                    <span>GST (10%):</span>
+                                                    <span>${quote.gst.toFixed(2)}</span>
+                                                </div>
+                                                <div className="products-total-row total">
+                                                    <span>Total:</span>
+                                                    <span>${quote.total.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <button 
+                                                className="btn" 
+                                                style={{marginTop: '16px'}}
+                                                onClick={() => setQuote(null)}
+                                            >
+                                                Recalculate Quote
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                
+                                {/* Documents */}
+                                <div className="section">
+                                    <div className="section-title">📄 DOCUMENTS</div>
+                                    <button className="btn" disabled={!quote}>
+                                        Create PandaDoc Quote
                                     </button>
-                                </>
-                            )}
-                        </div>
-                        
-                        {/* Documents */}
-                        <div className="section">
-                            <div className="section-title">📄 DOCUMENTS</div>
-                            <button className="btn" disabled={!quote}>
-                                Create PandaDoc Quote
-                            </button>
-                            <p style={{fontSize: '11px', color: '#666', marginTop: '8px', textAlign: 'center'}}>
-                                {!quote ? 'Calculate quote first' : 'Opens PandaDoc with products from deal'}
-                            </p>
-                        </div>
+                                    <p style={{fontSize: '11px', color: '#666', marginTop: '8px', textAlign: 'center'}}>
+                                        {!quote ? 'Calculate quote first' : 'Opens PandaDoc with products from deal'}
+                                    </p>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             );

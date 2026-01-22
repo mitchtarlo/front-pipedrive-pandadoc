@@ -62,9 +62,14 @@ Click "Add Environment Variable" for each one:
 | Key | Value |
 |-----|-------|
 | `PIPEDRIVE_API_TOKEN` | `your_pipedrive_api_token_here` |
+| `PIPEDRIVE_CLIENT_ID` | `your_pipedrive_client_id_here` |
+| `PIPEDRIVE_CLIENT_SECRET` | `your_pipedrive_client_secret_here` |
+| `PIPEDRIVE_REDIRECT_URI` | `https://your-service.onrender.com/api/pipedrive/oauth/callback` |
 | `PIPEDRIVE_DOMAIN` | `buildcert2.pipedrive.com` |
 | `FRONT_API_TOKEN` | `your_front_api_token_here` |
 | `NODE_ENV` | `production` |
+| `PIPEDRIVE_JWT_ENFORCE` | `true` |
+| `PIPEDRIVE_PANEL_DEBUG` | `false` |
 
 **Important:** 
 - Don't include quotes or backticks when pasting
@@ -92,7 +97,7 @@ https://buildcert-api.onrender.com
 4. App Type: `Panel`
 5. Panel URL:
 ```
-https://buildcert-api.onrender.com/pipedrive-panel?dealId={dealId}
+https://buildcert-api.onrender.com/pipedrive-panel
 ```
 6. Where to show: `Deal Detail View`
 7. Click "Save"
