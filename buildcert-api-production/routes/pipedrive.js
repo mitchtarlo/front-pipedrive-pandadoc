@@ -40,9 +40,6 @@ function resolveMappedFields(source, mapping = {}) {
   }, {});
 }
 
-const { getPipedriveAuth, buildPipedriveUrl } = require('../utils/pipedrive-auth');
-
-
 /**
  * GET /api/pipedrive/deal/:id
  * Get deal details from Pipedrive
@@ -51,7 +48,6 @@ router.get('/deal/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const auth = await getPipedriveAuth(req);
-
 
     if (!auth) {
       return res.status(401).json({
@@ -102,62 +98,13 @@ router.get('/deal/:id', async (req, res) => {
       ...resolveMappedFields(person, fieldMap.person)
     };
 
-
-    if (!auth) {
-      return res.status(401).json({
-        success: false,
-        error: 'Missing Pipedrive authentication.'
-      });
-    }
-
-    const response = await axios.get(buildPipedriveUrl(auth, `/deals/${id}`), {
-      headers: auth.headers
-    });
-
-    const deal = response.data.data;
-    const addressFieldKey = process.env.PIPEDRIVE_DEAL_ADDRESS_FIELD;
-    let address =
-      (addressFieldKey && deal?.[addressFieldKey]) || deal?.address || deal?.location;
-
-    let organization = null;
-    let person = null;
-
-    const organizationId =
-      typeof deal?.org_id === 'object' ? deal?.org_id?.value : deal?.org_id;
-    const personId =
-      typeof deal?.person_id === 'object' ? deal?.person_id?.value : deal?.person_id;
-
-    if (organizationId) {
-      const organizationResponse = await axios.get(
-        buildPipedriveUrl(auth, `/organizations/${organizationId}`),
-        { headers: auth.headers }
-      );
-      organization = organizationResponse.data?.data || null;
-      address = address || organization?.address || organization?.address_formatted;
-    }
-
-    if (personId) {
-      const personResponse = await axios.get(
-        buildPipedriveUrl(auth, `/persons/${personId}`),
-        { headers: auth.headers }
-      );
-      person = personResponse.data?.data || null;
-      address = address || person?.address || person?.address_formatted;
-    }
-
-
-
     res.json({
       success: true,
       deal,
       organization,
       person,
-
       address,
       fields: mappedFields
-
-      address
-
     });
 
   } catch (error) {
