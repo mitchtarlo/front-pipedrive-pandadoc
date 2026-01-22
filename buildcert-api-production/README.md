@@ -24,6 +24,7 @@ Go to your service → Environment → Add environment variables:
 
 ```
 PIPEDRIVE_API_TOKEN=your_pipedrive_api_token_here
+PIPEDRIVE_CLIENT_SECRET=your_pipedrive_client_secret_here
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
 FRONT_API_TOKEN=your_front_api_token_here
 PORT=3000
@@ -105,15 +106,14 @@ POST /api/front/create-lead
 ## 🎨 Frontend Plugins
 
 ### Pipedrive Custom Panel
-Access at: `https://buildcert-api.onrender.com/pipedrive-panel?dealId=123`
+Access at: `https://buildcert-api.onrender.com/pipedrive-panel`
 
 To install in Pipedrive:
 1. Go to Settings → Apps & Integrations → Custom Apps
 2. Create new app
-3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel?dealId={dealId}`
-   - If the form rejects `{dealId}`, use one of these validator-friendly options instead:
-     - `https://buildcert-api.onrender.com/pipedrive-panel?dealId=%7BdealId%7D`
-     - `https://buildcert-api.onrender.com/pipedrive-panel?id=%7Bid%7D`
+3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel`
+   - Pipedrive app extensions append required query parameters (token, id, selectedIds).
+   - The server validates the JWT using `PIPEDRIVE_CLIENT_SECRET` (or `PIPEDRIVE_JWT_SECRET` if set).
 
 ### Front Sidebar
 Access at: `https://buildcert-api.onrender.com/front-sidebar?conversation_id=cnv_123`
@@ -153,6 +153,7 @@ Access at: `http://localhost:3000`
 - All API keys stored as environment variables
 - CORS enabled for Front and Pipedrive domains
 - No sensitive data in code
+- Pipedrive panel requests are JWT-validated using `PIPEDRIVE_CLIENT_SECRET` (or `PIPEDRIVE_JWT_SECRET`)
 
 ## 📞 Support
 
