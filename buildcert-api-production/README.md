@@ -106,6 +106,11 @@ POST /api/front/create-lead
 }
 ```
 
+### OAuth Install Status
+```
+GET /api/pipedrive/oauth/status
+```
+
 ## 🎨 Frontend Plugins
 
 ### Pipedrive Custom Panel

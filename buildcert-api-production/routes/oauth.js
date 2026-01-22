@@ -5,6 +5,18 @@ const router = express.Router();
 const tokenStore = new Map();
 
 /**
+ * GET /oauth/status
+ * Simple install status check
+ */
+router.get('/status', (req, res) => {
+  const stored = tokenStore.get('pipedrive');
+  res.json({
+    installed: Boolean(stored?.accessToken),
+    obtainedAt: stored?.obtainedAt || null
+  });
+});
+
+/**
  * GET /oauth/callback
  * Handle Pipedrive OAuth callback
  */
