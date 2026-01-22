@@ -24,10 +24,14 @@ Go to your service → Environment → Add environment variables:
 
 ```
 PIPEDRIVE_API_TOKEN=your_pipedrive_api_token_here
+PIPEDRIVE_CLIENT_ID=your_pipedrive_client_id_here
+PIPEDRIVE_CLIENT_SECRET=your_pipedrive_client_secret_here
+PIPEDRIVE_REDIRECT_URI=https://your-service.onrender.com/api/pipedrive/oauth/callback
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
 FRONT_API_TOKEN=your_front_api_token_here
 PORT=3000
 NODE_ENV=production
+PIPEDRIVE_JWT_ENFORCE=true
 ```
 
 ### 3. Deploy!
@@ -105,15 +109,15 @@ POST /api/front/create-lead
 ## 🎨 Frontend Plugins
 
 ### Pipedrive Custom Panel
-Access at: `https://buildcert-api.onrender.com/pipedrive-panel?dealId=123`
+Access at: `https://buildcert-api.onrender.com/pipedrive-panel`
 
 To install in Pipedrive:
 1. Go to Settings → Apps & Integrations → Custom Apps
 2. Create new app
-3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel?dealId={dealId}`
-   - If the form rejects `{dealId}`, use one of these validator-friendly options instead:
-     - `https://buildcert-api.onrender.com/pipedrive-panel?dealId=%7BdealId%7D`
-     - `https://buildcert-api.onrender.com/pipedrive-panel?id=%7Bid%7D`
+3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel`
+   - Pipedrive app extensions append required query parameters (token, id, selectedIds).
+   - The server validates the JWT using `PIPEDRIVE_CLIENT_SECRET` (or `PIPEDRIVE_JWT_SECRET` if set).
+   - If the panel does not appear, temporarily set `PIPEDRIVE_JWT_ENFORCE=false` to confirm the JWT is the blocker.
 
 ### Front Sidebar
 Access at: `https://buildcert-api.onrender.com/front-sidebar?conversation_id=cnv_123`
@@ -153,6 +157,9 @@ Access at: `http://localhost:3000`
 - All API keys stored as environment variables
 - CORS enabled for Front and Pipedrive domains
 - No sensitive data in code
+- Pipedrive panel requests are JWT-validated using `PIPEDRIVE_CLIENT_SECRET` (or `PIPEDRIVE_JWT_SECRET`)
+- You can disable enforcement temporarily with `PIPEDRIVE_JWT_ENFORCE=false` to troubleshoot panel visibility
+- OAuth install exchanges the authorization code for an access token using `PIPEDRIVE_CLIENT_ID` and `PIPEDRIVE_CLIENT_SECRET`
 
 ## 📞 Support
 

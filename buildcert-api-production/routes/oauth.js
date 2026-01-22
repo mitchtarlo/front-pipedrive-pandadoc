@@ -1,5 +1,8 @@
 const express = require('express');
+const axios = require('axios');
 const router = express.Router();
+
+const tokenStore = new Map();
 
 /**
  * GET /oauth/callback
@@ -13,8 +16,42 @@ router.get('/callback', async (req, res) => {
       return res.status(400).send('Authorization code missing');
     }
 
-    // For a private app, we don't actually need to exchange the code
-    // Just redirect to success page
+    const clientId = process.env.PIPEDRIVE_CLIENT_ID;
+    const clientSecret = process.env.PIPEDRIVE_CLIENT_SECRET;
+    const redirectUri =
+      process.env.PIPEDRIVE_REDIRECT_URI ||
+      `${req.protocol}://${req.get('host')}/api/pipedrive/oauth/callback`;
+
+    if (!clientId || !clientSecret) {
+      return res
+        .status(500)
+        .send('Missing PIPEDRIVE_CLIENT_ID or PIPEDRIVE_CLIENT_SECRET.');
+    }
+
+    const tokenResponse = await axios.post(
+      'https://oauth.pipedrive.com/oauth/token',
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        client_secret: clientSecret
+      }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+
+    const { access_token: accessToken, refresh_token: refreshToken } = tokenResponse.data || {};
+
+    if (!accessToken) {
+      return res.status(500).send('Failed to retrieve access token from Pipedrive.');
+    }
+
+    tokenStore.set('pipedrive', {
+      accessToken,
+      refreshToken,
+      obtainedAt: new Date().toISOString()
+    });
+
     res.send(`
       <!DOCTYPE html>
       <html>

@@ -13,6 +13,23 @@ Value: your_pipedrive_api_token_here
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
+Key: PIPEDRIVE_CLIENT_ID
+Value: your_pipedrive_client_id_here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: PIPEDRIVE_CLIENT_SECRET
+Value: your_pipedrive_client_secret_here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+Key: PIPEDRIVE_REDIRECT_URI
+Value: https://your-service.onrender.com/api/pipedrive/oauth/callback
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Key: PIPEDRIVE_DOMAIN
 Value: buildcert2.pipedrive.com
 
@@ -28,12 +45,19 @@ Value: production
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+Key: PIPEDRIVE_JWT_ENFORCE
+Value: true
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⚠️  IMPORTANT NOTES:
 
 1. DO NOT commit .env file to GitHub (it's in .gitignore)
 2. Copy these values into Render's environment variables section
 3. Do NOT include quotes or backticks when pasting
 4. Each variable should be added separately in Render
+5. Optional: Set PIPEDRIVE_JWT_SECRET if you want a separate JWT secret (defaults to client secret)
+6. Set PIPEDRIVE_JWT_ENFORCE=false temporarily if the panel does not appear (for troubleshooting)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
