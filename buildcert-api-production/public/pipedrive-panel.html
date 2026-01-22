@@ -238,6 +238,7 @@
             const [planningData, setPlanningData] = useState(null);
             const [sdkReady, setSdkReady] = useState(false);
             const [pipedriveToken, setPipedriveToken] = useState(null);
+
             const sdkRef = useRef(null);
             
             // Form state
@@ -309,6 +310,7 @@
                 }
             }, [sdkReady, dealId, pipedriveToken]);
 
+
             useEffect(() => {
                 resizePanel();
             }, [
@@ -329,6 +331,7 @@
                 window.addEventListener('resize', handleResize);
                 return () => window.removeEventListener('resize', handleResize);
             }, []);
+
             
             async function loadDealData(id) {
                 try {
@@ -339,6 +342,7 @@
                         if (!address && data.address) {
                             setAddress(data.address);
                         }
+
                         if (!clientCategory && data.fields?.client_category) {
                             setClientCategory(data.fields.client_category);
                         }
