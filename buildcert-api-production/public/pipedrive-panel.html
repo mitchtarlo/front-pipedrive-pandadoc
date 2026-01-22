@@ -14,7 +14,11 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html, body, #root {
+            height: 100%;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: #f5f5f5;
@@ -224,7 +228,7 @@
     <div id="root"></div>
     
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
         
         function PipedrivePanel() {
             const [dealId, setDealId] = useState(null);
@@ -233,6 +237,8 @@
             const [quote, setQuote] = useState(null);
             const [planningData, setPlanningData] = useState(null);
             const [sdkReady, setSdkReady] = useState(false);
+            const [pipedriveToken, setPipedriveToken] = useState(null);
+            const sdkRef = useRef(null);
             
             // Form state
             const [clientCategory, setClientCategory] = useState('');
@@ -244,12 +250,17 @@
             useEffect(() => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const sdkId = urlParams.get('id');
+                const token = urlParams.get('token');
                 const selectedIds = urlParams.get('selectedIds');
                 const selectedDealId = selectedIds ? selectedIds.split(',')[0] : null;
                 const id = urlParams.get('dealId') || urlParams.get('id') || selectedDealId;
 
                 if (id) {
                     setDealId(id);
+                }
+                
+                if (token) {
+                    setPipedriveToken(token);
                 }
 
                 const sdkConstructor =
@@ -272,6 +283,7 @@
                 const sdk = new sdkConstructor();
                 sdk.initialize({ id: sdkId })
                     .then(() => {
+                        sdkRef.current = sdk;
                         setSdkReady(true);
                         setLoading(false);
                     })
@@ -282,24 +294,67 @@
                     });
             }, []);
 
+            const resizePanel = () => {
+                const sdk = sdkRef.current;
+                if (!sdk || typeof sdk.resize !== 'function') {
+                    return;
+                }
+                const height = document.body.scrollHeight;
+                sdk.resize({ height });
+            };
+
             useEffect(() => {
                 if (sdkReady && dealId) {
                     loadDealData(dealId);
                 }
-            }, [sdkReady, dealId]);
+            }, [sdkReady, dealId, pipedriveToken]);
+
+            useEffect(() => {
+                resizePanel();
+            }, [
+                sdkReady,
+                loading,
+                error,
+                quote,
+                planningData,
+                clientCategory,
+                developmentType,
+                approvalType,
+                costOfWorks,
+                address
+            ]);
+
+            useEffect(() => {
+                const handleResize = () => resizePanel();
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
             
             async function loadDealData(id) {
                 try {
-                    const response = await fetch(`/api/pipedrive/deal/${id}`);
+                    const response = await fetch(`/api/pipedrive/deal/${id}?token=${encodeURIComponent(pipedriveToken || '')}`);
                     const data = await response.json();
                     
                     if (data.success && data.deal) {
-                        // Pre-fill form if data exists
-                        // You can map custom fields here
+                        if (!address && data.address) {
+                            setAddress(data.address);
+                        }
+                        if (!clientCategory && data.fields?.client_category) {
+                            setClientCategory(data.fields.client_category);
+                        }
+                        if (!developmentType && data.fields?.development_type) {
+                            setDevelopmentType(data.fields.development_type);
+                        }
+                        if (!approvalType && data.fields?.approval_type) {
+                            setApprovalType(data.fields.approval_type);
+                        }
+                        if (!costOfWorks && data.fields?.cost_of_works) {
+                            setCostOfWorks(String(data.fields.cost_of_works));
+                        }
                     }
                     
                     // Check if products already exist
-                    const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products`);
+                    const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products?token=${encodeURIComponent(pipedriveToken || '')}`);
                     const productsData = await productsResponse.json();
                     
                     if (productsData.success && productsData.products.length > 0) {
@@ -329,7 +384,8 @@
                             development_type: developmentType,
                             approval_type: approvalType,
                             cost_of_works: parseFloat(costOfWorks),
-                            deal_id: dealId
+                            deal_id: dealId,
+                            pipedrive_jwt: pipedriveToken
                         })
                     });
                     

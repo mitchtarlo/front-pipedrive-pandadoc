@@ -24,7 +24,11 @@ Go to your service → Environment → Add environment variables:
 
 ```
 PIPEDRIVE_API_TOKEN=your_pipedrive_api_token_here
+PIPEDRIVE_CLIENT_ID=your_pipedrive_client_id_here
 PIPEDRIVE_CLIENT_SECRET=your_pipedrive_client_secret_here
+PIPEDRIVE_REDIRECT_URI=https://buildcert-api.onrender.com/oauth/callback
+PIPEDRIVE_DEAL_ADDRESS_FIELD=your_pipedrive_deal_address_field_key
+PIPEDRIVE_FIELD_MAP_PATH=./config/pipedrive-field-map.json
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
 FRONT_API_TOKEN=your_front_api_token_here
 PORT=3000
@@ -114,6 +118,8 @@ To install in Pipedrive:
 3. Add URL: `https://buildcert-api.onrender.com/pipedrive-panel`
    - Pipedrive app extensions append required query parameters (token, id, selectedIds).
    - The server validates the JWT using `PIPEDRIVE_CLIENT_SECRET` (or `PIPEDRIVE_JWT_SECRET` if set).
+4. For Marketplace OAuth installs, set the callback URL to `https://buildcert-api.onrender.com/oauth/callback` and
+   ensure `PIPEDRIVE_CLIENT_ID`, `PIPEDRIVE_CLIENT_SECRET`, and `PIPEDRIVE_REDIRECT_URI` are configured.
 
 ### Front Sidebar
 Access at: `https://buildcert-api.onrender.com/front-sidebar?conversation_id=cnv_123`

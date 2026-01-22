@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { calculateQuote } = require('../utils/pricing-calculator');
 const axios = require('axios');
+const { getPipedriveAuth, buildPipedriveUrl } = require('../utils/pipedrive-auth');
 
 /**
  * POST /api/quotes/calculate
@@ -20,8 +21,15 @@ router.post('/calculate', async (req, res) => {
     });
 
     // If deal_id provided, add products to Pipedrive
-    if (deal_id && process.env.PIPEDRIVE_API_TOKEN) {
-      await addProductsToPipedrive(deal_id, quote);
+    if (deal_id) {
+      const auth = await getPipedriveAuth(req);
+      if (!auth) {
+        return res.status(401).json({
+          success: false,
+          error: 'Missing Pipedrive authentication.'
+        });
+      }
+      await addProductsToPipedrive(deal_id, quote, auth);
     }
 
     res.json({
@@ -41,12 +49,9 @@ router.post('/calculate', async (req, res) => {
 /**
  * Add products to a Pipedrive deal
  */
-async function addProductsToPipedrive(dealId, quote) {
-  const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-  const apiToken = process.env.PIPEDRIVE_API_TOKEN;
-
+async function addProductsToPipedrive(dealId, quote, auth) {
   // First, get or create products
-  const productIds = await ensureProductsExist(quote.line_items);
+  const productIds = await ensureProductsExist(quote.line_items, auth);
 
   // Add each product to the deal
   for (let i = 0; i < quote.line_items.length; i++) {
@@ -54,7 +59,7 @@ async function addProductsToPipedrive(dealId, quote) {
     const productId = productIds[i];
 
     await axios.post(
-      `${pipedriveUrl}/deals/${dealId}/products?api_token=${apiToken}`,
+      buildPipedriveUrl(auth, `/deals/${dealId}/products`),
       {
         product_id: productId,
         item_price: item.unit_price,
@@ -62,15 +67,21 @@ async function addProductsToPipedrive(dealId, quote) {
         discount: 0,
         tax: item.gst_applicable ? 10 : 0,
         enabled_flag: true
+      },
+      {
+        headers: auth.headers
       }
     );
   }
 
   // Update deal value
   await axios.put(
-    `${pipedriveUrl}/deals/${dealId}?api_token=${apiToken}`,
+    buildPipedriveUrl(auth, `/deals/${dealId}`),
     {
       value: quote.total
+    },
+    {
+      headers: auth.headers
     }
   );
 }
@@ -78,15 +89,19 @@ async function addProductsToPipedrive(dealId, quote) {
 /**
  * Ensure all products exist in Pipedrive, create if they don't
  */
-async function ensureProductsExist(lineItems) {
-  const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-  const apiToken = process.env.PIPEDRIVE_API_TOKEN;
+async function ensureProductsExist(lineItems, auth) {
   const productIds = [];
 
   for (const item of lineItems) {
     // Search for existing product
     const searchResponse = await axios.get(
-      `${pipedriveUrl}/products/search?term=${encodeURIComponent(item.name)}&api_token=${apiToken}`
+      buildPipedriveUrl(
+        auth,
+        `/products/search?term=${encodeURIComponent(item.name)}`
+      ),
+      {
+        headers: auth.headers
+      }
     );
 
     let productId;
@@ -97,7 +112,7 @@ async function ensureProductsExist(lineItems) {
     } else {
       // Create product
       const createResponse = await axios.post(
-        `${pipedriveUrl}/products?api_token=${apiToken}`,
+        buildPipedriveUrl(auth, '/products'),
         {
           name: item.name,
           code: item.name.replace(/\s+/g, '_').toUpperCase(),
@@ -107,6 +122,9 @@ async function ensureProductsExist(lineItems) {
             cost: 0
           }],
           tax: item.gst_applicable ? 10 : 0
+        },
+        {
+          headers: auth.headers
         }
       );
       productId = createResponse.data.data.id;
