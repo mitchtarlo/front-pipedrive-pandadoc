@@ -13,8 +13,23 @@ Value: your_pipedrive_api_token_here
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+Key: PIPEDRIVE_CLIENT_ID
+Value: your_pipedrive_client_id_here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Key: PIPEDRIVE_CLIENT_SECRET
 Value: your_pipedrive_client_secret_here
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: PIPEDRIVE_REDIRECT_URI
+Value: https://buildcert-api.onrender.com/oauth/callback
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key: PIPEDRIVE_DEAL_ADDRESS_FIELD
+Value: your_pipedrive_deal_address_field_key
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
