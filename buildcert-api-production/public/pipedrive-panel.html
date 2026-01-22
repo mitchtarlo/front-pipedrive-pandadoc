@@ -14,7 +14,11 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html, body, #root {
+            height: 100%;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: #f5f5f5;
@@ -224,7 +228,7 @@
     <div id="root"></div>
     
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
         
         function PipedrivePanel() {
             const [dealId, setDealId] = useState(null);
@@ -234,6 +238,8 @@
             const [planningData, setPlanningData] = useState(null);
             const [sdkReady, setSdkReady] = useState(false);
             const [pipedriveToken, setPipedriveToken] = useState(null);
+
+            const sdkRef = useRef(null);
             
             // Form state
             const [clientCategory, setClientCategory] = useState('');
@@ -278,6 +284,7 @@
                 const sdk = new sdkConstructor();
                 sdk.initialize({ id: sdkId })
                     .then(() => {
+                        sdkRef.current = sdk;
                         setSdkReady(true);
                         setLoading(false);
                     })
@@ -288,11 +295,43 @@
                     });
             }, []);
 
+            const resizePanel = () => {
+                const sdk = sdkRef.current;
+                if (!sdk || typeof sdk.resize !== 'function') {
+                    return;
+                }
+                const height = document.body.scrollHeight;
+                sdk.resize({ height });
+            };
+
             useEffect(() => {
                 if (sdkReady && dealId) {
                     loadDealData(dealId);
                 }
             }, [sdkReady, dealId, pipedriveToken]);
+
+
+            useEffect(() => {
+                resizePanel();
+            }, [
+                sdkReady,
+                loading,
+                error,
+                quote,
+                planningData,
+                clientCategory,
+                developmentType,
+                approvalType,
+                costOfWorks,
+                address
+            ]);
+
+            useEffect(() => {
+                const handleResize = () => resizePanel();
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
             
             async function loadDealData(id) {
                 try {
@@ -302,6 +341,19 @@
                     if (data.success && data.deal) {
                         if (!address && data.address) {
                             setAddress(data.address);
+                        }
+
+                        if (!clientCategory && data.fields?.client_category) {
+                            setClientCategory(data.fields.client_category);
+                        }
+                        if (!developmentType && data.fields?.development_type) {
+                            setDevelopmentType(data.fields.development_type);
+                        }
+                        if (!approvalType && data.fields?.approval_type) {
+                            setApprovalType(data.fields.approval_type);
+                        }
+                        if (!costOfWorks && data.fields?.cost_of_works) {
+                            setCostOfWorks(String(data.fields.cost_of_works));
                         }
                     }
                     
