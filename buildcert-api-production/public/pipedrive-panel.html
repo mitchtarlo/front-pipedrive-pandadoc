@@ -336,6 +336,12 @@
             async function loadDealData(id) {
                 try {
                     const response = await fetch(`/api/pipedrive/deal/${id}?token=${encodeURIComponent(pipedriveToken || '')}`);
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error('Unauthorized: check your Pipedrive app credentials or JWT token.');
+                        }
+                        throw new Error(`Failed to load deal data (status ${response.status}).`);
+                    }
                     const data = await response.json();
                     
                     if (data.success && data.deal) {
@@ -359,6 +365,12 @@
                     
                     // Check if products already exist
                     const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products?token=${encodeURIComponent(pipedriveToken || '')}`);
+                    if (!productsResponse.ok) {
+                        if (productsResponse.status === 401) {
+                            throw new Error('Unauthorized: check your Pipedrive app credentials or JWT token.');
+                        }
+                        throw new Error(`Failed to load deal products (status ${productsResponse.status}).`);
+                    }
                     const productsData = await productsResponse.json();
                     
                     if (productsData.success && productsData.products.length > 0) {
@@ -367,12 +379,29 @@
                     }
                 } catch (err) {
                     console.error('Error loading deal:', err);
+                    setError(err.message || 'Failed to load deal data.');
+                } finally {
+                    setLoading(false);
                 }
             }
             
             async function calculateQuote() {
-                if (!clientCategory || !developmentType || !costOfWorks) {
-                    setError('Please fill in all required fields');
+                const missingFields = [];
+                if (!clientCategory) {
+                    missingFields.push('Client Category');
+                }
+                if (!developmentType) {
+                    missingFields.push('Development Type');
+                }
+                if (!approvalType) {
+                    missingFields.push('Approval Type');
+                }
+                if (!costOfWorks || Number.isNaN(parseFloat(costOfWorks))) {
+                    missingFields.push('Value of Works');
+                }
+
+                if (missingFields.length > 0) {
+                    setError(`Missing required fields: ${missingFields.join(', ')}`);
                     return;
                 }
                 
@@ -392,7 +421,12 @@
                             pipedrive_jwt: pipedriveToken
                         })
                     });
-                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error('Unauthorized: check your Pipedrive app credentials or JWT token.');
+                        }
+                        throw new Error(`Quote calculation failed (status ${response.status}).`);
+                    }
                     const data = await response.json();
                     
                     if (data.success) {
@@ -422,7 +456,9 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ address })
                     });
-                    
+                    if (!response.ok) {
+                        throw new Error(`Planning portal check failed (status ${response.status}).`);
+                    }
                     const data = await response.json();
                     
                     if (data.success) {
@@ -437,6 +473,10 @@
                 }
             }
             
+            function resetError() {
+                setError(null);
+            }
+
             return (
                 <div className="panel">
                     <div className="panel-header">
@@ -444,13 +484,20 @@
                     </div>
                     
                     <div className="panel-body">
-                        {error && <div className="error">{error}</div>}
+                        {error && (
+                            <div className="error">
+                                <div style={{marginBottom: '8px'}}>{error}</div>
+                                <button className="btn btn-secondary" onClick={resetError}>
+                                    Dismiss Error
+                                </button>
+                            </div>
+                        )}
                         {loading && <div className="loading">Loading panel...</div>}
-                        {!loading && !error && !dealId && (
+                        {!loading && !dealId && (
                             <div className="error">Missing deal ID from Pipedrive context.</div>
                         )}
                         
-                        {!loading && !error && (
+                        {!loading && dealId && (
                             <>
                                 {/* Planning Portal Check */}
                                 <div className="section">
