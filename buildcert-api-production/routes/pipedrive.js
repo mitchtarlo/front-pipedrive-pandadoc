@@ -54,6 +54,7 @@ router.get('/deal/:id', async (req, res) => {
       address = address || person?.address || person?.address_formatted;
     }
 
+
     res.json({
       success: true,
       deal,
