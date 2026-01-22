@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const { getPipedriveAuth, buildPipedriveUrl } = require('../utils/pipedrive-auth');
 
 /**
  * GET /api/pipedrive/deal/:id
@@ -9,12 +10,18 @@ const axios = require('axios');
 router.get('/deal/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-    const apiToken = process.env.PIPEDRIVE_API_TOKEN;
+    const auth = await getPipedriveAuth(req);
 
-    const response = await axios.get(
-      `${pipedriveUrl}/deals/${id}?api_token=${apiToken}`
-    );
+    if (!auth) {
+      return res.status(401).json({
+        success: false,
+        error: 'Missing Pipedrive authentication.'
+      });
+    }
+
+    const response = await axios.get(buildPipedriveUrl(auth, `/deals/${id}`), {
+      headers: auth.headers
+    });
 
     res.json({
       success: true,
@@ -37,11 +44,20 @@ router.get('/deal/:id', async (req, res) => {
 router.get('/deal/:id/products', async (req, res) => {
   try {
     const { id } = req.params;
-    const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-    const apiToken = process.env.PIPEDRIVE_API_TOKEN;
+    const auth = await getPipedriveAuth(req);
+
+    if (!auth) {
+      return res.status(401).json({
+        success: false,
+        error: 'Missing Pipedrive authentication.'
+      });
+    }
 
     const response = await axios.get(
-      `${pipedriveUrl}/deals/${id}/products?api_token=${apiToken}`
+      buildPipedriveUrl(auth, `/deals/${id}/products`),
+      {
+        headers: auth.headers
+      }
     );
 
     res.json({

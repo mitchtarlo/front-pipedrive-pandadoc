@@ -233,6 +233,7 @@
             const [quote, setQuote] = useState(null);
             const [planningData, setPlanningData] = useState(null);
             const [sdkReady, setSdkReady] = useState(false);
+            const [pipedriveToken, setPipedriveToken] = useState(null);
             
             // Form state
             const [clientCategory, setClientCategory] = useState('');
@@ -244,12 +245,17 @@
             useEffect(() => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const sdkId = urlParams.get('id');
+                const token = urlParams.get('token');
                 const selectedIds = urlParams.get('selectedIds');
                 const selectedDealId = selectedIds ? selectedIds.split(',')[0] : null;
                 const id = urlParams.get('dealId') || urlParams.get('id') || selectedDealId;
 
                 if (id) {
                     setDealId(id);
+                }
+                
+                if (token) {
+                    setPipedriveToken(token);
                 }
 
                 const sdkConstructor =
@@ -286,11 +292,11 @@
                 if (sdkReady && dealId) {
                     loadDealData(dealId);
                 }
-            }, [sdkReady, dealId]);
+            }, [sdkReady, dealId, pipedriveToken]);
             
             async function loadDealData(id) {
                 try {
-                    const response = await fetch(`/api/pipedrive/deal/${id}`);
+                    const response = await fetch(`/api/pipedrive/deal/${id}?token=${encodeURIComponent(pipedriveToken || '')}`);
                     const data = await response.json();
                     
                     if (data.success && data.deal) {
@@ -299,7 +305,7 @@
                     }
                     
                     // Check if products already exist
-                    const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products`);
+                    const productsResponse = await fetch(`/api/pipedrive/deal/${id}/products?token=${encodeURIComponent(pipedriveToken || '')}`);
                     const productsData = await productsResponse.json();
                     
                     if (productsData.success && productsData.products.length > 0) {
@@ -329,7 +335,8 @@
                             development_type: developmentType,
                             approval_type: approvalType,
                             cost_of_works: parseFloat(costOfWorks),
-                            deal_id: dealId
+                            deal_id: dealId,
+                            pipedrive_jwt: pipedriveToken
                         })
                     });
                     
