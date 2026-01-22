@@ -28,6 +28,12 @@ Value: https://buildcert-api.onrender.com/oauth/callback
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
+Key: PIPEDRIVE_DEAL_ADDRESS_FIELD
+Value: your_pipedrive_deal_address_field_key
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Key: PIPEDRIVE_DOMAIN
 Value: buildcert2.pipedrive.com
 

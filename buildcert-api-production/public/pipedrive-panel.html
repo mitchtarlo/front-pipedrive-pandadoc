@@ -300,8 +300,9 @@
                     const data = await response.json();
                     
                     if (data.success && data.deal) {
-                        // Pre-fill form if data exists
-                        // You can map custom fields here
+                        if (!address && data.address) {
+                            setAddress(data.address);
+                        }
                     }
                     
                     // Check if products already exist
