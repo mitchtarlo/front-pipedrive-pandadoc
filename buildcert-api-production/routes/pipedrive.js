@@ -1,6 +1,45 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+var pipedriveAuth = require('../utils/pipedrive-auth');
+var { getPipedriveAuth, buildPipedriveUrl } = pipedriveAuth;
+
+const fieldMapPath =
+  process.env.PIPEDRIVE_FIELD_MAP_PATH ||
+  path.join(__dirname, '..', 'config', 'pipedrive-field-map.json');
+
+let cachedFieldMap = null;
+
+function loadFieldMap() {
+  if (cachedFieldMap) {
+    return cachedFieldMap;
+  }
+
+  try {
+    const raw = fs.readFileSync(fieldMapPath, 'utf8');
+    cachedFieldMap = JSON.parse(raw);
+  } catch (error) {
+    console.warn('⚠️ Unable to load Pipedrive field map:', error.message);
+    cachedFieldMap = {};
+  }
+
+  return cachedFieldMap;
+}
+
+function resolveMappedFields(source, mapping = {}) {
+  return Object.entries(mapping).reduce((acc, [key, fieldId]) => {
+    if (!fieldId) {
+      return acc;
+    }
+    const value = source?.[fieldId];
+    if (value !== undefined && value !== null && value !== '') {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+}
 
 /**
  * GET /api/pipedrive/deal/:id
@@ -9,16 +48,64 @@ const axios = require('axios');
 router.get('/deal/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-    const apiToken = process.env.PIPEDRIVE_API_TOKEN;
+    const auth = await getPipedriveAuth(req);
 
-    const response = await axios.get(
-      `${pipedriveUrl}/deals/${id}?api_token=${apiToken}`
-    );
+    if (!auth) {
+      return res.status(401).json({
+        success: false,
+        error: 'Missing Pipedrive authentication.'
+      });
+    }
+
+    const response = await axios.get(buildPipedriveUrl(auth, `/deals/${id}`), {
+      headers: auth.headers
+    });
+
+    const deal = response.data.data;
+    const fieldMap = loadFieldMap();
+    const addressFieldKey = process.env.PIPEDRIVE_DEAL_ADDRESS_FIELD;
+    let address =
+      (addressFieldKey && deal?.[addressFieldKey]) || deal?.address || deal?.location;
+
+    let organization = null;
+    let person = null;
+
+    const organizationId =
+      typeof deal?.org_id === 'object' ? deal?.org_id?.value : deal?.org_id;
+    const personId =
+      typeof deal?.person_id === 'object' ? deal?.person_id?.value : deal?.person_id;
+
+    if (organizationId) {
+      const organizationResponse = await axios.get(
+        buildPipedriveUrl(auth, `/organizations/${organizationId}`),
+        { headers: auth.headers }
+      );
+      organization = organizationResponse.data?.data || null;
+      address = address || organization?.address || organization?.address_formatted;
+    }
+
+    if (personId) {
+      const personResponse = await axios.get(
+        buildPipedriveUrl(auth, `/persons/${personId}`),
+        { headers: auth.headers }
+      );
+      person = personResponse.data?.data || null;
+      address = address || person?.address || person?.address_formatted;
+    }
+
+    const mappedFields = {
+      ...resolveMappedFields(deal, fieldMap.deal),
+      ...resolveMappedFields(organization, fieldMap.organization),
+      ...resolveMappedFields(person, fieldMap.person)
+    };
 
     res.json({
       success: true,
-      deal: response.data.data
+      deal,
+      organization,
+      person,
+      address,
+      fields: mappedFields
     });
 
   } catch (error) {
@@ -37,11 +124,20 @@ router.get('/deal/:id', async (req, res) => {
 router.get('/deal/:id/products', async (req, res) => {
   try {
     const { id } = req.params;
-    const pipedriveUrl = `https://${process.env.PIPEDRIVE_DOMAIN}/api/v1`;
-    const apiToken = process.env.PIPEDRIVE_API_TOKEN;
+    const auth = await getPipedriveAuth(req);
+
+    if (!auth) {
+      return res.status(401).json({
+        success: false,
+        error: 'Missing Pipedrive authentication.'
+      });
+    }
 
     const response = await axios.get(
-      `${pipedriveUrl}/deals/${id}/products?api_token=${apiToken}`
+      buildPipedriveUrl(auth, `/deals/${id}/products`),
+      {
+        headers: auth.headers
+      }
     );
 
     res.json({

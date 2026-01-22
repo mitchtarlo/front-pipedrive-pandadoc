@@ -1,0 +1,15 @@
+{
+  "deal": {
+    "job_address": "deal_custom_field_key",
+    "client_category": "deal_custom_field_key",
+    "development_type": "deal_custom_field_key",
+    "approval_type": "deal_custom_field_key",
+    "cost_of_works": "deal_custom_field_key"
+  },
+  "organization": {
+    "job_address": "org_custom_field_key"
+  },
+  "person": {
+    "job_address": "person_custom_field_key"
+  }
+}
