@@ -30,6 +30,7 @@ PIPEDRIVE_REDIRECT_URI=https://buildcert-api.onrender.com/oauth/callback
 PIPEDRIVE_DEAL_ADDRESS_FIELD=your_pipedrive_deal_address_field_key
 PIPEDRIVE_FIELD_MAP_PATH=./config/pipedrive-field-map.json
 PIPEDRIVE_DOMAIN=buildcert2.pipedrive.com
+PIPEDRIVE_OAUTH_STORE_PATH=./config/pipedrive-oauth-store.json
 FRONT_API_TOKEN=your_front_api_token_here
 PORT=3000
 NODE_ENV=production

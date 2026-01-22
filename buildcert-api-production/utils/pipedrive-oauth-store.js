@@ -1,6 +1,50 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+const STORE_PATH =
+  process.env.PIPEDRIVE_OAUTH_STORE_PATH ||
+  path.join(__dirname, '..', 'config', 'pipedrive-oauth-store.json');
 
 const installations = new Map();
+
+function loadInstallations() {
+  if (!fs.existsSync(STORE_PATH)) {
+    return;
+  }
+
+  try {
+    const raw = fs.readFileSync(STORE_PATH, 'utf8');
+    if (!raw) {
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    Object.entries(parsed).forEach(([companyId, installation]) => {
+      if (installation && installation.companyId) {
+        installations.set(String(companyId), installation);
+      }
+    });
+  } catch (error) {
+    console.warn('Failed to load Pipedrive OAuth installations.', error);
+  }
+}
+
+function persistInstallations() {
+  try {
+    const directory = path.dirname(STORE_PATH);
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+    const data = Object.fromEntries(installations.entries());
+    const tmpPath = `${STORE_PATH}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
+    fs.renameSync(tmpPath, STORE_PATH);
+  } catch (error) {
+    console.warn('Failed to persist Pipedrive OAuth installations.', error);
+  }
+}
+
+loadInstallations();
 
 function normalizeCompanyId(companyId) {
   if (companyId === null || companyId === undefined) {
@@ -33,6 +77,8 @@ function storeInstallation({
     apiDomain,
     scope
   });
+
+  persistInstallations();
 }
 
 function getInstallation(companyId) {
