@@ -62,7 +62,9 @@ Click "Add Environment Variable" for each one:
 | Key | Value |
 |-----|-------|
 | `PIPEDRIVE_API_TOKEN` | `your_pipedrive_api_token_here` |
+| `PIPEDRIVE_CLIENT_ID` | `your_pipedrive_client_id_here` |
 | `PIPEDRIVE_CLIENT_SECRET` | `your_pipedrive_client_secret_here` |
+| `PIPEDRIVE_REDIRECT_URI` | `https://buildcert-api.onrender.com/oauth/callback` |
 | `PIPEDRIVE_DOMAIN` | `buildcert2.pipedrive.com` |
 | `FRONT_API_TOKEN` | `your_front_api_token_here` |
 | `NODE_ENV` | `production` |
@@ -95,9 +97,13 @@ https://buildcert-api.onrender.com
 ```
 https://buildcert-api.onrender.com/pipedrive-panel
 ```
-6. Where to show: `Deal Detail View`
-7. Click "Save"
-8. ✅ Done! Panel appears in all deals
+6. OAuth Callback URL (Marketplace installs):
+```
+https://buildcert-api.onrender.com/oauth/callback
+```
+7. Where to show: `Deal Detail View`
+8. Click "Save"
+9. ✅ Done! Panel appears in all deals
 
 ## Step 5: Install Front Sidebar Plugin
 
